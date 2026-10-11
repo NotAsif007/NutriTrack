@@ -1,32 +1,42 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
 import { api, getApiErrorMessage } from "../services/api";
-import { DayDiarySummary, MealType, ApiResponse } from "../types";
+import { DayDiarySummary, DailyNutritionSummary, MealType, ApiResponse } from "../types";
 import { DateNavigator } from "../components/DateNavigator";
 import { MealSection } from "../components/MealSection";
 import { FoodSearchModal } from "../components/FoodSearchModal";
 import { CustomFoodModal } from "../components/CustomFoodModal";
+import { ExportSummaryModal } from "../components/ExportSummaryModal";
 import { Button } from "../components/ui/Button";
 import { Skeleton } from "../components/ui/Skeleton";
-import { Plus, AlertCircle } from "lucide-react";
+import { Plus, AlertCircle, Flame, Beef, Wheat, Droplets, Leaf, Share2 } from "lucide-react";
 
 export const FoodDiaryPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [diary, setDiary] = useState<DayDiarySummary | null>(null);
+  const [summary, setSummary] = useState<DailyNutritionSummary | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeMealType, setActiveMealType] = useState<MealType>("Breakfast");
   const [isCustomFoodOpen, setIsCustomFoodOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
   const fetchDiary = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await api.get<ApiResponse<DayDiarySummary>>(`/food-logs?date=${selectedDate}`);
-      if (res.data.success) {
-        setDiary(res.data.data);
+      const [diaryRes, summaryRes] = await Promise.all([
+        api.get<ApiResponse<DayDiarySummary>>(`/food-logs?date=${selectedDate}`),
+        api.get<ApiResponse<DailyNutritionSummary>>(`/nutrition/daily?date=${selectedDate}`),
+      ]);
+
+      if (diaryRes.data.success) {
+        setDiary(diaryRes.data.data);
+      }
+      if (summaryRes.data.success) {
+        setSummary(summaryRes.data.data);
       }
     } catch (err) {
       setError(getApiErrorMessage(err));
@@ -44,22 +54,42 @@ export const FoodDiaryPage: React.FC = () => {
     setIsSearchOpen(true);
   };
 
+  const macroItems = diary
+    ? [
+        { label: "Calories", value: diary.totalCalories, unit: "kcal", icon: Flame, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100" },
+        { label: "Protein", value: diary.totalProtein, unit: "g", icon: Beef, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100" },
+        { label: "Carbs", value: diary.totalCarbs, unit: "g", icon: Wheat, color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-100" },
+        { label: "Fat", value: diary.totalFat, unit: "g", icon: Droplets, color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-100" },
+        { label: "Fiber", value: diary.totalFiber, unit: "g", icon: Leaf, color: "text-teal-600", bg: "bg-teal-50", border: "border-teal-100" },
+      ]
+    : [];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 animate-fade-in">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">
+          <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
             Food Diary
           </h2>
-          <p className="text-xs md:text-sm text-gray-500 mt-0.5">
-            Log and review your meals, serving portions, and nutritional breakdown for any date.
+          <p className="text-sm text-slate-500 mt-1">
+            Log meals, review portions, and track nutritional breakdown for any date.
           </p>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="ghost"
+            size="md"
+            onClick={() => setIsExportOpen(true)}
+            className="border border-slate-200"
+            title="Share or Export Daily Diary"
+          >
+            <Share2 className="w-4 h-4 mr-1 text-slate-600" />
+            <span className="hidden sm:inline">Export</span>
+          </Button>
+          <Button
+            variant="soft"
             size="md"
             onClick={() => setIsCustomFoodOpen(true)}
           >
@@ -70,7 +100,7 @@ export const FoodDiaryPage: React.FC = () => {
             size="md"
             onClick={() => handleOpenSearch("Breakfast")}
           >
-            <Plus className="w-4 h-4 mr-1.5" />
+            <Plus className="w-4 h-4 mr-1" />
             Add Entry
           </Button>
         </div>
@@ -80,7 +110,7 @@ export const FoodDiaryPage: React.FC = () => {
       <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
 
       {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-xl flex items-center space-x-2">
+        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-2xl flex items-center gap-2 animate-slide-up">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
@@ -88,67 +118,38 @@ export const FoodDiaryPage: React.FC = () => {
 
       {/* Day Macro Totals Banner */}
       {diary && (
-        <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Total Day Intake
-            </span>
-            <div className="text-2xl font-black text-emerald-600 mt-0.5">
-              {diary.totalCalories}{" "}
-              <span className="text-sm font-semibold text-gray-500">kcal</span>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 animate-slide-up">
+          {macroItems.map((item) => (
+            <div
+              key={item.label}
+              className={`p-3.5 rounded-2xl border ${item.bg} ${item.border} flex flex-col`}
+            >
+              <div className={`flex items-center gap-1.5 ${item.color} mb-1`}>
+                <item.icon className="w-3.5 h-3.5" />
+                <span className="text-[10px] font-bold uppercase tracking-wide">{item.label}</span>
+              </div>
+              <p className={`text-xl font-black ${item.color} leading-none`}>
+                {item.value}
+                <span className={`text-xs font-medium opacity-70 ml-1`}>{item.unit}</span>
+              </p>
             </div>
-          </div>
-          <div className="flex items-center space-x-4 text-xs font-semibold">
-            <div className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-100">
-              Protein: {diary.totalProtein}g
-            </div>
-            <div className="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-100">
-              Carbs: {diary.totalCarbs}g
-            </div>
-            <div className="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-100">
-              Fat: {diary.totalFat}g
-            </div>
-            <div className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100">
-              Fiber: {diary.totalFiber}g
-            </div>
-          </div>
+          ))}
         </div>
       )}
 
       {/* Diary Meal Categories */}
       {isLoading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-32 w-full rounded-xl" />
+        <div className="space-y-3">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-24 w-full rounded-2xl" />
+          ))}
         </div>
       ) : diary ? (
-        <div className="space-y-4">
-          <MealSection
-            mealType="Breakfast"
-            summary={diary.meals.Breakfast}
-            onOpenSearch={handleOpenSearch}
-            onDiaryUpdated={fetchDiary}
-          />
-          <MealSection
-            mealType="Lunch"
-            summary={diary.meals.Lunch}
-            onOpenSearch={handleOpenSearch}
-            onDiaryUpdated={fetchDiary}
-          />
-          <MealSection
-            mealType="Dinner"
-            summary={diary.meals.Dinner}
-            onOpenSearch={handleOpenSearch}
-            onDiaryUpdated={fetchDiary}
-          />
-          <MealSection
-            mealType="Snacks"
-            summary={diary.meals.Snacks}
-            onOpenSearch={handleOpenSearch}
-            onDiaryUpdated={fetchDiary}
-          />
+        <div className="space-y-3">
+          <MealSection mealType="Breakfast" summary={diary.meals.Breakfast} onOpenSearch={handleOpenSearch} onDiaryUpdated={fetchDiary} />
+          <MealSection mealType="Lunch" summary={diary.meals.Lunch} onOpenSearch={handleOpenSearch} onDiaryUpdated={fetchDiary} />
+          <MealSection mealType="Dinner" summary={diary.meals.Dinner} onOpenSearch={handleOpenSearch} onDiaryUpdated={fetchDiary} />
+          <MealSection mealType="Snacks" summary={diary.meals.Snacks} onOpenSearch={handleOpenSearch} onDiaryUpdated={fetchDiary} />
         </div>
       ) : null}
 
@@ -167,6 +168,15 @@ export const FoodDiaryPage: React.FC = () => {
         isOpen={isCustomFoodOpen}
         onClose={() => setIsCustomFoodOpen(false)}
         onFoodCreated={fetchDiary}
+      />
+
+      {/* Export & Share Daily Summary Modal */}
+      <ExportSummaryModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        selectedDate={selectedDate}
+        summary={summary}
+        diary={diary}
       />
     </div>
   );

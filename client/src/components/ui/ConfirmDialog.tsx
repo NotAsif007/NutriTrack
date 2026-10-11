@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal } from "./Modal";
 import { Button } from "./Button";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, HelpCircle } from "lucide-react";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -28,18 +28,34 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title} maxWidth="sm">
-      <div className="space-y-4">
-        <div className="flex items-start space-x-3 text-sm text-gray-600">
-          {isDangerous && (
-            <div className="p-2 bg-rose-50 text-rose-600 rounded-lg shrink-0">
+      <div className="space-y-5 pt-1">
+        <div className="flex items-start gap-3.5">
+          <div
+            className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
+              isDangerous
+                ? "bg-rose-50 text-rose-600 ring-4 ring-rose-50/50"
+                : "bg-amber-50 text-amber-600 ring-4 ring-amber-50/50"
+            }`}
+          >
+            {isDangerous ? (
               <AlertTriangle className="w-5 h-5" />
-            </div>
-          )}
-          <p className="mt-1 leading-relaxed">{message}</p>
+            ) : (
+              <HelpCircle className="w-5 h-5" />
+            )}
+          </div>
+          <div className="flex-1 pt-0.5">
+            <p className="text-sm text-slate-600 leading-relaxed font-medium">{message}</p>
+          </div>
         </div>
 
-        <div className="flex items-center justify-end space-x-3 pt-3 border-t border-gray-100">
-          <Button variant="outline" size="sm" onClick={onClose} disabled={isLoading}>
+        <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 pt-4 border-t border-slate-100">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            disabled={isLoading}
+            className="w-full sm:w-auto"
+          >
             {cancelText}
           </Button>
           <Button
@@ -47,6 +63,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             size="sm"
             onClick={onConfirm}
             isLoading={isLoading}
+            className="w-full sm:w-auto shadow-sm"
           >
             {confirmText}
           </Button>

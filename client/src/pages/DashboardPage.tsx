@@ -1,24 +1,39 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { format } from "date-fns";
-import { useAuth } from "../context/AuthContext";
+import { format, parseISO } from "date-fns";
 import { api, getApiErrorMessage } from "../services/api";
-import { DailyNutritionSummary, DayDiarySummary, MealType, ApiResponse } from "../types";
+import {
+  DailyNutritionSummary,
+  DayDiarySummary,
+  WeeklyNutritionSummary,
+  MealType,
+  ApiResponse,
+} from "../types";
 import { DateNavigator } from "../components/DateNavigator";
 import { CalorieSummaryCard } from "../components/CalorieSummaryCard";
 import { MacroProgressCard } from "../components/MacroProgressCard";
 import { MealSection } from "../components/MealSection";
 import { FoodSearchModal } from "../components/FoodSearchModal";
 import { CustomFoodModal } from "../components/CustomFoodModal";
+import { WaterTrackerCard } from "../components/WaterTrackerCard";
+import { WeeklyIntakeCard } from "../components/WeeklyIntakeCard";
+import { DayStreakCard } from "../components/DayStreakCard";
+import { ExportSummaryModal } from "../components/ExportSummaryModal";
 import { Button } from "../components/ui/Button";
 import { Skeleton } from "../components/ui/Skeleton";
 import { EmptyState } from "../components/ui/EmptyState";
-import { Plus, Utensils, AlertCircle } from "lucide-react";
+import { useQuickLog } from "../context/QuickLogContext";
+import {
+  Utensils,
+  AlertCircle,
+  Share2,
+  Calendar,
+} from "lucide-react";
 
 export const DashboardPage: React.FC = () => {
-  const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [summary, setSummary] = useState<DailyNutritionSummary | null>(null);
   const [diary, setDiary] = useState<DayDiarySummary | null>(null);
+  const [weeklyData, setWeeklyData] = useState<WeeklyNutritionSummary | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,14 +41,16 @@ export const DashboardPage: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeMealType, setActiveMealType] = useState<MealType>("Breakfast");
   const [isCustomFoodOpen, setIsCustomFoodOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
 
   const fetchDashboardData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const [summaryRes, diaryRes] = await Promise.all([
+      const [summaryRes, diaryRes, weeklyRes] = await Promise.all([
         api.get<ApiResponse<DailyNutritionSummary>>(`/nutrition/daily?date=${selectedDate}`),
         api.get<ApiResponse<DayDiarySummary>>(`/food-logs?date=${selectedDate}`),
+        api.get<ApiResponse<WeeklyNutritionSummary>>(`/nutrition/weekly?endDate=${selectedDate}`),
       ]);
 
       if (summaryRes.data.success) {
@@ -42,6 +59,9 @@ export const DashboardPage: React.FC = () => {
       if (diaryRes.data.success) {
         setDiary(diaryRes.data.data);
       }
+      if (weeklyRes.data.success) {
+        setWeeklyData(weeklyRes.data.data);
+      }
     } catch (err) {
       setError(getApiErrorMessage(err));
     } finally {
@@ -49,49 +69,61 @@ export const DashboardPage: React.FC = () => {
     }
   }, [selectedDate]);
 
+  const { refreshKey } = useQuickLog();
+
   useEffect(() => {
     fetchDashboardData();
-  }, [fetchDashboardData]);
+  }, [fetchDashboardData, refreshKey]);
 
   const handleOpenSearch = (meal: MealType) => {
     setActiveMealType(meal);
     setIsSearchOpen(true);
   };
 
-  const firstName = user?.name ? user.name.split(" ")[0] : "Friend";
+  const formattedDateTitle = format(parseISO(selectedDate), "EEEE, d MMMM yyyy");
 
   return (
-    <div className="space-y-6">
-      {/* Top Header & Greeting */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">
-            Welcome back, {firstName} 👋
+    <div className="space-y-5 animate-fade-in pb-10">
+      {/* Sleek Subheader: Date title, Export, and Create Food buttons (top log button removed) */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-1">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-emerald-600" />
+          <h2 className="text-sm font-bold text-slate-700 tracking-tight">
+            {formattedDateTitle}
           </h2>
-          <p className="text-xs md:text-sm text-gray-500 mt-0.5">
-            Track today&apos;s nutritional intake and stay in alignment with your calorie goals.
-          </p>
+          {selectedDate === format(new Date(), "yyyy-MM-dd") && (
+            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+              Today
+            </span>
+          )}
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <Button
-            variant="primary"
-            size="md"
-            onClick={() => handleOpenSearch("Breakfast")}
-            className="shadow-sm shadow-emerald-600/20"
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsExportOpen(true)}
+            className="border border-slate-200/80 bg-white text-xs h-8 px-2.5 shadow-2xs"
+            title="Export / Share Daily Report"
           >
-            <Plus className="w-4 h-4 mr-1.5" />
-            Log Food
+            <Share2 className="w-3.5 h-3.5 mr-1 text-slate-600" />
+            <span>Export Report</span>
+          </Button>
+
+          <Button
+            variant="soft"
+            size="sm"
+            onClick={() => setIsCustomFoodOpen(true)}
+            className="text-xs h-8 px-2.5"
+          >
+            + Create Food
           </Button>
         </div>
       </div>
 
-      {/* Date Navigator */}
-      <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
-
       {/* Error alert */}
       {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-xl flex items-center space-x-2">
+        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-2xl flex items-center gap-2 animate-slide-up">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
@@ -99,20 +131,25 @@ export const DashboardPage: React.FC = () => {
 
       {/* Loading Skeletons */}
       {isLoading ? (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Skeleton className="h-44 w-full rounded-xl" />
-            <Skeleton className="h-44 w-full rounded-xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <div className="lg:col-span-8 space-y-5">
+            <Skeleton className="h-64 w-full rounded-3xl" />
+            <Skeleton className="h-44 w-full rounded-3xl" />
+            <Skeleton className="h-28 w-full rounded-3xl" />
+            <Skeleton className="h-56 w-full rounded-3xl" />
           </div>
-          <div className="space-y-4">
-            <Skeleton className="h-28 w-full rounded-xl" />
-            <Skeleton className="h-28 w-full rounded-xl" />
+          <div className="lg:col-span-4 space-y-5">
+            <Skeleton className="h-56 w-full rounded-3xl" />
+            <Skeleton className="h-48 w-full rounded-3xl" />
+            <Skeleton className="h-48 w-full rounded-3xl" />
           </div>
         </div>
       ) : summary && diary ? (
-        <>
-          {/* Daily Calorie & Macronutrient Summary Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        /* Main Grid: Responsive 2-Column Desktop & Tablet Layout */
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          {/* Main / Primary Column (lg:col-span-7 xl:col-span-8) */}
+          <div className="lg:col-span-7 xl:col-span-8 space-y-5">
+            {/* 1. Daily Calorie Budget HERO Card (Comes FIRST!) */}
             <CalorieSummaryCard
               targetCalories={summary.targetCalories}
               consumedCalories={summary.consumedCalories}
@@ -122,56 +159,77 @@ export const DashboardPage: React.FC = () => {
               percentage={summary.percentage}
             />
 
+            {/* 2. Macronutrient Targets Progress Card */}
             <MacroProgressCard
               protein={summary.macros.protein}
               carbs={summary.macros.carbs}
               fat={summary.macros.fat}
               fiber={summary.macros.fiber}
             />
+
+            {/* 3. Interactive 7-Day Week Calendar Strip right above meals */}
+            <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
+
+            {/* 4. Planned Meals Breakdown */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between px-1">
+                <div>
+                  <h3 className="text-base font-black text-slate-900 tracking-tight">
+                    Planned Meals
+                  </h3>
+                  <p className="text-xs text-slate-400 font-medium">
+                    Daily food schedule & portion control
+                  </p>
+                </div>
+                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-100">
+                  {diary.totalCalories} kcal total
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                <MealSection
+                  mealType="Breakfast"
+                  summary={diary.meals.Breakfast}
+                  onOpenSearch={handleOpenSearch}
+                  onDiaryUpdated={fetchDashboardData}
+                />
+
+                <MealSection
+                  mealType="Lunch"
+                  summary={diary.meals.Lunch}
+                  onOpenSearch={handleOpenSearch}
+                  onDiaryUpdated={fetchDashboardData}
+                />
+
+                <MealSection
+                  mealType="Dinner"
+                  summary={diary.meals.Dinner}
+                  onOpenSearch={handleOpenSearch}
+                  onDiaryUpdated={fetchDashboardData}
+                />
+
+                <MealSection
+                  mealType="Snacks"
+                  summary={diary.meals.Snacks}
+                  onOpenSearch={handleOpenSearch}
+                  onDiaryUpdated={fetchDashboardData}
+                />
+              </div>
+            </div>
           </div>
 
-          {/* Meals Breakdown Sections */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-gray-900 tracking-tight">
-                Daily Food Diary
-              </h3>
-              <span className="text-xs text-gray-500 font-medium">
-                {diary.totalCalories} kcal total consumed
-              </span>
-            </div>
+          {/* Right Panel / Analytics & Challenges (lg:col-span-5 xl:col-span-4) */}
+          <div className="lg:col-span-5 xl:col-span-4 space-y-5">
+            {/* Weekly Caloric Intake Bar Chart */}
+            <WeeklyIntakeCard weeklyData={weeklyData} selectedDate={selectedDate} />
 
-            <div className="space-y-4">
-              <MealSection
-                mealType="Breakfast"
-                summary={diary.meals.Breakfast}
-                onOpenSearch={handleOpenSearch}
-                onDiaryUpdated={fetchDashboardData}
-              />
+            {/* 7-Day Streak Challenge Card */}
+            <DayStreakCard selectedDate={selectedDate} />
 
-              <MealSection
-                mealType="Lunch"
-                summary={diary.meals.Lunch}
-                onOpenSearch={handleOpenSearch}
-                onDiaryUpdated={fetchDashboardData}
-              />
-
-              <MealSection
-                mealType="Dinner"
-                summary={diary.meals.Dinner}
-                onOpenSearch={handleOpenSearch}
-                onDiaryUpdated={fetchDashboardData}
-              />
-
-              <MealSection
-                mealType="Snacks"
-                summary={diary.meals.Snacks}
-                onOpenSearch={handleOpenSearch}
-                onDiaryUpdated={fetchDashboardData}
-              />
-            </div>
+            {/* Drink Water Hydration Tracker */}
+            <WaterTrackerCard selectedDate={selectedDate} />
           </div>
-        </>
+        </div>
       ) : (
         <EmptyState
           icon={<Utensils className="w-10 h-10" />}
@@ -199,6 +257,15 @@ export const DashboardPage: React.FC = () => {
         onFoodCreated={() => {
           setIsSearchOpen(true);
         }}
+      />
+
+      {/* Export & Share Daily Summary Modal */}
+      <ExportSummaryModal
+        isOpen={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        selectedDate={selectedDate}
+        summary={summary}
+        diary={diary}
       />
     </div>
   );

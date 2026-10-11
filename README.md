@@ -7,7 +7,7 @@
 [![React 18](https://img.shields.io/badge/Frontend-React%2018%20%2B%20Vite-61DAFB?logo=react)](https://react.dev/)
 [![Express REST](https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-green?logo=express)](https://expressjs.com/)
 [![MongoDB](https://img.shields.io/badge/Database-MongoDB%20%2B%20Mongoose-47A248?logo=mongodb)](https://www.mongodb.com/)
-[![Vitest](https://img.shields.io/badge/Tests-40%2F40%20Passing-brightgreen?logo=vitest)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Tests-42%2F42%20Passing-brightgreen?logo=vitest)](https://vitest.dev/)
 [![Security](https://img.shields.io/badge/Auth-HttpOnly%20JWT%20Cookies-orange)](https://jwt.io/)
 
 ---
@@ -19,8 +19,14 @@
 ### Key Differentiators & Engineering Highlights
 * **Zero Simulated Data**: Every statistic, chart, subtotal, and budget calculation is derived from real database records.
 * **Zero-Trust Server Calculations**: Client forms provide food IDs and serving quantities; the server computes, scales, and snapshots nutritional values directly into the database to ensure mathematical integrity.
+* **Modern Fitness UI Kit Redesign**: Inspired by iOS Health and Nutrio UI kits featuring clean card hierarchy, circular gauge hero displays, planned meal cards with dish thumbnails, and interactive 7-day week calendar strips.
+* **Elevated Quick Log Action Sheet**: A prominent floating center button triggers a frosted quick-log modal allowing instant 1-tap logging for Breakfast, Lunch, Dinner, Snacks, +250ml Water, and Body Weight.
+* **Dynamic Color Theme Engine**: Full-system color customization supporting 6 curated palettes (**Emerald Mint**, **Royal Indigo**, **Nutrio Lime**, **Ocean Cyan**, **Sunset Coral**, **Rose Berry**) driven by CSS variables and Tailwind tokens with zero stale components.
+* **Cross-Device Responsive Architecture**: Custom-tailored layouts for smartphones (floating bottom pill navigation, touch targets), tablets (compact 72px icon-rail sidebar, balanced 2-column grid), and desktop PCs (260px expanded sidebar, full analytics dashboard).
+* **Daily Hydration Tracker**: Per-date water intake logger with instant portion increment buttons (250ml, 500ml, 750ml) and goal celebrations.
+* **1-Click Nutrition Exporter**: Generate formatted plain-text/markdown diary reports for fitness coaches and download structured JSON logs.
 * **Historical Immutability**: Modifying or removing standard foods from the catalog does not distort past diary logs.
-* **Zero-Config Local Execution**: An automated fallback to `mongodb-memory-server` allows the entire application to boot and pass all tests out-of-the-box on evaluation machines without requiring a pre-installed MongoDB daemon.
+* **Zero-Config Local Execution**: Automated fallback to `mongodb-memory-server` allows the entire application to boot and pass all 42 tests out-of-the-box on evaluation machines without requiring a pre-installed MongoDB daemon.
 * **Strict Multi-Tenant Isolation**: Verified through automated security tests where users cannot access, modify, or delete records belonging to other accounts.
 
 ---
@@ -82,7 +88,7 @@
 
 ---
 
-## 4. Academic SDLC Documentation Suite
+## 4. SDLC Documentations
 
 Complete lifecycle documentation is available in the [`docs/`](./docs) folder:
 
@@ -93,7 +99,7 @@ Complete lifecycle documentation is available in the [`docs/`](./docs) folder:
 | [**DATABASE_DESIGN.md**](./docs/DATABASE_DESIGN.md) | Mongoose collection schemas, ER diagrams, compound index strategies, and historical snapshot models. |
 | [**API_DOCUMENTATION.md**](./docs/API_DOCUMENTATION.md) | REST API endpoints, request/response JSON payloads, status codes, and error envelopes. |
 | [**TEST_PLAN.md**](./docs/TEST_PLAN.md) | Testing scope, unit calculation cases, Supertest API scenarios, and multi-tenant security verification. |
-| [**TEST_REPORT.md**](./docs/TEST_REPORT.md) | Actual test execution report with 40/40 passing tests, defect diagnosis, and durations. |
+| [**TEST_REPORT.md**](./docs/TEST_REPORT.md) | Actual test execution report with 42/42 passing tests, defect diagnosis, and durations. |
 | [**QUALITY_EVALUATION.md**](./docs/QUALITY_EVALUATION.md) | ISO/IEC 25010 quality assessment across correctness, security, performance, and accessibility. |
 | [**SECURITY_NOTES.md**](./docs/SECURITY_NOTES.md) | Deep dive into HttpOnly cookies, password hashing, NoSQL injection defenses, and tenant isolation. |
 | [**USER_MANUAL.md**](./docs/USER_MANUAL.md) | Comprehensive illustrated end-user guide covering registration, food logging, serving calculations, and weight tracking. |
@@ -158,17 +164,17 @@ NutriTrack includes a test suite covering unit calculations, server-side scaling
 # Run all backend tests (35 tests)
 npm run test:server
 
-# Run all frontend component tests (5 tests)
+# Run all frontend component tests (7 tests)
 npm run test:client
 ```
 
 ### Verified Test Summary
 ```text
 ✓ server/src/tests/nutritionCalculator.test.ts (14 tests) [8ms]
-✓ server/src/tests/api.test.ts (21 tests) [4.67s]
-✓ client/src/test/components.test.tsx (5 tests) [90ms]
+✓ server/src/tests/api.test.ts (21 tests) [4.36s]
+✓ client/src/test/components.test.tsx (7 tests) [100ms]
 
-Total: 40 tests passed (100% success rate)
+Total: 42 tests passed (100% success rate)
 ```
 
 ---
@@ -215,4 +221,5 @@ npm run build
 ---
 
 ## 10. License & Academic Attribution
-Developed as an academic demonstration of the Software Development Life Cycle (SDLC) for B.Tech Computer Science and Engineering. Distributed under the MIT License.
+Developed as an academic demonstration of the Software Development Life Cycle (SDLC). 
+Distributed under the MIT License.

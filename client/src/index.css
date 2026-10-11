@@ -3,23 +3,210 @@
 @tailwind utilities;
 
 @layer base {
+  /* Default: Emerald Mint */
+  :root,
+  [data-theme="emerald"] {
+    --color-primary-50: 236 253 245;
+    --color-primary-100: 209 250 229;
+    --color-primary-200: 167 243 208;
+    --color-primary-300: 110 231 183;
+    --color-primary-400: 52 211 153;
+    --color-primary-500: 16 185 129;
+    --color-primary-600: 5 150 105;
+    --color-primary-700: 4 120 87;
+    --color-primary-800: 6 95 70;
+    --color-primary-900: 6 78 59;
+    --theme-primary-hex: #10B981;
+    --theme-glow: 16 185 129;
+  }
+
+  /* Royal Indigo / Violet (Inspo 1 style) */
+  [data-theme="indigo"] {
+    --color-primary-50: 238 242 255;
+    --color-primary-100: 224 231 255;
+    --color-primary-200: 199 210 254;
+    --color-primary-300: 165 180 252;
+    --color-primary-400: 129 140 248;
+    --color-primary-500: 99 102 241;
+    --color-primary-600: 79 70 229;
+    --color-primary-700: 67 56 202;
+    --color-primary-800: 55 48 163;
+    --color-primary-900: 49 46 129;
+    --theme-primary-hex: #6366F1;
+    --theme-glow: 99 102 241;
+  }
+
+  /* Nutrio Lime (Inspo 2 & 3 style) */
+  [data-theme="lime"] {
+    --color-primary-50: 247 254 231;
+    --color-primary-100: 236 252 203;
+    --color-primary-200: 217 249 157;
+    --color-primary-300: 190 242 100;
+    --color-primary-400: 163 230 53;
+    --color-primary-500: 132 204 22;
+    --color-primary-600: 101 163 13;
+    --color-primary-700: 77 124 15;
+    --color-primary-800: 63 98 18;
+    --color-primary-900: 54 83 20;
+    --theme-primary-hex: #84CC16;
+    --theme-glow: 132 204 22;
+  }
+
+  /* Ocean Cyan / Blue */
+  [data-theme="ocean"] {
+    --color-primary-50: 240 249 255;
+    --color-primary-100: 224 242 254;
+    --color-primary-200: 186 230 253;
+    --color-primary-300: 125 211 252;
+    --color-primary-400: 56 189 248;
+    --color-primary-500: 14 165 233;
+    --color-primary-600: 2 132 199;
+    --color-primary-700: 3 105 161;
+    --color-primary-800: 7 89 133;
+    --color-primary-900: 12 74 110;
+    --theme-primary-hex: #0EA5E9;
+    --theme-glow: 14 165 233;
+  }
+
+  /* Sunset Coral / Warm Orange */
+  [data-theme="coral"] {
+    --color-primary-50: 255 247 237;
+    --color-primary-100: 255 237 213;
+    --color-primary-200: 254 215 170;
+    --color-primary-300: 253 186 116;
+    --color-primary-400: 251 146 60;
+    --color-primary-500: 249 115 22;
+    --color-primary-600: 234 88 12;
+    --color-primary-700: 194 65 12;
+    --color-primary-800: 154 52 18;
+    --color-primary-900: 124 45 18;
+    --theme-primary-hex: #F97316;
+    --theme-glow: 249 115 22;
+  }
+
+  /* Rose Berry */
+  [data-theme="rose"] {
+    --color-primary-50: 255 241 242;
+    --color-primary-100: 255 228 230;
+    --color-primary-200: 254 205 211;
+    --color-primary-300: 253 164 175;
+    --color-primary-400: 251 113 133;
+    --color-primary-500: 244 63 94;
+    --color-primary-600: 225 29 72;
+    --color-primary-700: 190 18 60;
+    --color-primary-800: 159 18 57;
+    --color-primary-900: 136 19 55;
+    --theme-primary-hex: #F43F5E;
+    --theme-glow: 244 63 94;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
   body {
-    @apply bg-[#F8F9F7] text-gray-900;
+    @apply bg-[#F8FAFC] text-slate-900 font-sans antialiased;
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
   }
 }
 
-/* Custom modern scrollbar */
+@layer components {
+  /* Ultra-clean modern cards */
+  .card-modern {
+    @apply bg-white rounded-3xl border border-slate-100 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.03)] p-5 transition-all duration-200;
+  }
+
+  .card-modern-hover {
+    @apply card-modern hover:shadow-[0_10px_30px_-4px_rgba(0,0,0,0.06)] hover:border-slate-200/80;
+  }
+
+  /* Glassmorphism card */
+  .glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/70 shadow-sm;
+  }
+
+  .glass-dark {
+    @apply bg-slate-900/80 backdrop-blur-md border border-white/10;
+  }
+
+  /* Pill Buttons & Badges */
+  .pill-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold transition-all;
+  }
+
+  /* Gradient text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-400;
+  }
+}
+
+@layer utilities {
+  /* Custom scrollbar */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-slate-200/70 rounded-full;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-300;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Safe area padding for iOS */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 1.25rem);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+}
+
+/* Global scrollbar: completely hidden across all browsers and devices */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
-::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
-  border-radius: 9999px;
+
+/* Recharts responsive fixes */
+.recharts-wrapper {
+  font-family: inherit !important;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
+.recharts-tooltip-wrapper {
+  outline: none !important;
+}
+
+/* SVG ring animation */
+.ring-progress {
+  transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+  transform: rotate(-90deg);
 }

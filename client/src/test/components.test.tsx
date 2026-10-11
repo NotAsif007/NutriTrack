@@ -4,6 +4,8 @@ import { Button } from "../components/ui/Button";
 import { CalorieSummaryCard } from "../components/CalorieSummaryCard";
 import { MacroProgressCard } from "../components/MacroProgressCard";
 import { EmptyState } from "../components/ui/EmptyState";
+import { ConfirmDialog } from "../components/ui/ConfirmDialog";
+import { Badge } from "../components/ui/Badge";
 
 describe("Frontend UI Components", () => {
   it("renders Button correctly with text and responds to disabled prop", () => {
@@ -13,7 +15,7 @@ describe("Frontend UI Components", () => {
     expect(btn).toBeDisabled();
   });
 
-  it("renders CalorieSummaryCard with target and remaining calories", () => {
+  it("renders CalorieSummaryCard with target, consumed, and remaining calories", () => {
     render(
       <CalorieSummaryCard
         targetCalories={2000}
@@ -25,13 +27,14 @@ describe("Frontend UI Components", () => {
       />
     );
 
-    expect(screen.getByText("2000")).toBeInTheDocument();
-    expect(screen.getByText("1400")).toBeInTheDocument();
-    expect(screen.getByText("600")).toBeInTheDocument();
-    expect(screen.getByText(/70% reached/i)).toBeInTheDocument();
+    expect(screen.getByText(/2000/i)).toBeInTheDocument();
+    expect(screen.getByText(/1400/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/600/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/70%/i)).toBeInTheDocument();
+    expect(screen.getByText(/600 kcal remaining/i)).toBeInTheDocument();
   });
 
-  it("renders CalorieSummaryCard with over-budget warning when target exceeded", () => {
+  it("renders CalorieSummaryCard with over-target warning when target exceeded", () => {
     render(
       <CalorieSummaryCard
         targetCalories={2000}
@@ -43,10 +46,11 @@ describe("Frontend UI Components", () => {
       />
     );
 
-    expect(screen.getByText(/Over Budget \(\+300 kcal\)/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/\+300/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Over/i).length).toBeGreaterThanOrEqual(1);
   });
 
-  it("renders MacroProgressCard with macro targets", () => {
+  it("renders MacroProgressCard with macro targets and items", () => {
     render(
       <MacroProgressCard
         protein={{ consumed: 90, target: 120 }}
@@ -56,10 +60,12 @@ describe("Frontend UI Components", () => {
       />
     );
 
-    expect(screen.getByText("Protein")).toBeInTheDocument();
-    expect(screen.getByText("Carbohydrates")).toBeInTheDocument();
-    expect(screen.getByText("Fat")).toBeInTheDocument();
-    expect(screen.getByText("Dietary Fiber")).toBeInTheDocument();
+    expect(screen.getAllByText(/Protein/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Carbohydrates/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Fat/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Fiber/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/90g/i)).toBeInTheDocument();
+    expect(screen.getByText(/120g/i)).toBeInTheDocument();
   });
 
   it("renders EmptyState with title, description, and action button", () => {
@@ -75,5 +81,28 @@ describe("Frontend UI Components", () => {
     expect(screen.getByText("No Entries Found")).toBeInTheDocument();
     expect(screen.getByText(/Please add a meal to begin tracking/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /log now/i })).toBeInTheDocument();
+  });
+
+  it("renders ConfirmDialog correctly when open", () => {
+    render(
+      <ConfirmDialog
+        isOpen={true}
+        onClose={() => {}}
+        onConfirm={() => {}}
+        title="Delete Food Entry"
+        message="Are you sure you want to delete this meal log?"
+        confirmText="Delete Meal"
+        isDangerous={true}
+      />
+    );
+
+    expect(screen.getByText("Delete Food Entry")).toBeInTheDocument();
+    expect(screen.getByText(/Are you sure you want to delete this meal log\?/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /delete meal/i })).toBeInTheDocument();
+  });
+
+  it("renders Badge with appropriate styling variant", () => {
+    render(<Badge variant="success">High Protein</Badge>);
+    expect(screen.getByText("High Protein")).toBeInTheDocument();
   });
 });

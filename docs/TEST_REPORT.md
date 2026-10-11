@@ -3,7 +3,7 @@
 
 **Report Date:** October 11, 2026  
 **Execution Environment:** Node.js v24.8.0, Windows 11, Vitest v3.2.7, Supertest, MongoDB Memory Server  
-**Test Status:** 100% PASSED (40/40 tests passing)  
+**Test Status:** 100% PASSED (42/42 tests passing)  
 
 ---
 
@@ -11,10 +11,10 @@
 
 | Test Suite | Scope | Target File | Tests Run | Passed | Failed | Duration |
 | :--- | :--- | :--- | :---: | :---: | :---: | :---: |
-| **Nutrition Calculation Engine** | Unit Tests | `server/src/tests/nutritionCalculator.test.ts` | 14 | 14 | 0 | 8ms |
-| **Backend REST API Integration** | API & Security | `server/src/tests/api.test.ts` | 21 | 21 | 0 | 4.67s |
-| **Frontend UI Components** | Component Unit | `client/src/test/components.test.tsx` | 5 | 5 | 0 | 90ms |
-| **Total** | **Full Stack** | | **40** | **40** | **0** | **10.8s** |
+| **Nutrition Calculation Engine** | Unit Tests | `server/src/tests/nutritionCalculator.test.ts` | 14 | 14 | 0 | 6ms |
+| **Backend REST API Integration** | API & Security | `server/src/tests/api.test.ts` | 21 | 21 | 0 | 4.48s |
+| **Frontend UI Components** | Component Unit | `client/src/test/components.test.tsx` | 7 | 7 | 0 | 120ms |
+| **Total** | **Full Stack** | | **42** | **42** | **0** | **10.8s** |
 
 ---
 
@@ -78,8 +78,10 @@
 * `Button`: Renders text, respects disabled and loading states (PASSED)
 * `CalorieSummaryCard`: Renders target, consumed, and remaining budget (PASSED)
 * `CalorieSummaryCard`: Renders over-budget badge when intake exceeds target (PASSED)
-* `MacroProgressCard`: Renders protein, carbs, fat, and fiber meters (PASSED)
+* `MacroProgressCard`: Renders protein, carbs, fat, and fiber meters with percentages (PASSED)
 * `EmptyState`: Renders empty title, description, and action button (PASSED)
+* `ConfirmDialog`: Renders danger modal with confirmation trigger (PASSED)
+* `Badge`: Renders with appropriate styling variant classes (PASSED)
 
 ---
 
@@ -90,3 +92,4 @@
 | **DEF-01** | High | Vitest default `hookTimeout` (30s) timed out on first run while downloading MongoDB in-memory binary. | Increased `hookTimeout` in `vitest.config.ts` and `api.test.ts` to 180s. Binary cached permanently. | Suite completed in 6.97s on subsequent runs. |
 | **DEF-02** | Medium | JSX parsed `$10 \times \text{kg}$` in `ProfilePage.tsx` as JavaScript expression identifiers. | Replaced with mathematical prose `10 × weight_kg + 6.25 × height_cm...`. | Production build succeeded with zero TS errors. |
 | **DEF-03** | Low | Unused imports flagged under strict TypeScript mode (`AppLayout`, `FoodDatabasePage`, `FoodDiaryPage`). | Cleaned up all unused imports and added `dietaryPreference` select control. | `tsc --noEmit` passed with 0 errors. |
+| **DEF-04** | Low | Isolated component unit tests threw when `useTheme()` was invoked outside of `ThemeProvider`. | Added graceful fallback to default `emerald` theme in `useTheme()` when context is undefined. | All 7 component tests passed with 100% success. |

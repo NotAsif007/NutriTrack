@@ -131,3 +131,64 @@ All system errors conform to a standardized JSON schema:
 * **Zod Validation Middleware**: Catches bad payloads and maps issues to `{ field, issue }` without executing business logic.
 * **AppError Class**: Custom operational error class carrying HTTP status codes and machine-readable error codes.
 * **Global Error Handler**: Intercepts unhandled exceptions, sanitizes database errors (e.g. duplicate key code 11000), logs errors with stack traces on the server, and ensures sensitive internal details are never exposed to clients.
+
+---
+
+## 5. UI/UX Design System & Theme Engine Architecture
+
+NutriTrack implements a reactive design system driven by dynamic CSS Custom Properties and Tailwind CSS tokens:
+
+```
+[ThemeContext] (State: 'emerald' | 'indigo' | 'lime' | 'ocean' | 'coral' | 'rose')
+      |
+      +---> Sets <html data-theme="..."> attribute
+      |
+      +---> CSS Variables in index.css:
+      |       --color-primary-50 through --color-primary-900 (RGB triples)
+      |       --theme-primary-hex (Hex code for SVG & Recharts)
+      |
+      +---> Tailwind config extends colors:
+      |       emerald: rgb(var(--color-primary-*) / <alpha-value>)
+      |       primary: rgb(var(--color-primary-*) / <alpha-value>)
+      |
+      +---> All UI elements (Buttons, SVG donut gauges, Recharts bars,
+            Active nav indicators, Gradients, Badges) immediately update live.
+```
+
+### Supported Palettes:
+1. **Emerald Mint** (`#10B981`): Balanced health & vitality (Default).
+2. **Royal Indigo** (`#6366F1`): Deep modern purple aesthetic (*from Inspo Kit 1*).
+3. **Nutrio Lime** (`#84CC16`): High-energy athletic lime (*from Inspo Kit 2 & 3*).
+4. **Ocean Cyan** (`#0EA5E9`): Cool executive cyan for focus & hydration.
+5. **Sunset Coral** (`#F97316`): Warm performance coral for calorie burning.
+6. **Rose Berry** (`#F43F5E`): Vibrant berry wellness aesthetic.
+
+---
+
+## 6. Global Quick Log Architecture & Action Sheet
+
+NutriTrack employs a centralized Quick Log orchestrator:
+
+```
+[MobileNav / Desktop Header]
+      | (Click Center '+' Button)
+      v
+[QuickLogContext.openQuickLog()]
+      |
+      +---> Renders [QuickLogPopup] (Frosted bottom sheet/dialog)
+              |
+              +---> Breakfast / Lunch / Dinner / Snacks
+              |       └──> Calls openFoodSearch(meal) -> Renders [FoodSearchModal]
+              |
+              +---> +250ml Water Shortcut
+              |       └──> Direct POST /water-logs with visual confirmation
+              |
+              +---> Weight Weigh-in
+              |       └──> Calls openWeightModal() -> Renders [WeightTrackerModal]
+              |
+              +---> Custom Food
+                      └──> Calls openCustomFoodModal() -> Renders [CustomFoodModal]
+```
+
+This decoupled architecture allows triggering meal searches, hydration logs, and weigh-ins from anywhere across the application without tight coupling between page views and modal logic.
+

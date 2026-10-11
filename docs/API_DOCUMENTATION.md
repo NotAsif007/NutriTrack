@@ -242,7 +242,123 @@
 ### 6.2 Weekly Progress (7-Day Rolling)
 * **Method:** `GET`
 * **Route:** `/api/v1/nutrition/weekly?endDate=2026-10-11`
+* **Auth Required:** Yes
+* **Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "days": [
+      {
+        "date": "2026-10-05",
+        "consumedCalories": 1950,
+        "targetCalories": 2000,
+        "protein": 110,
+        "carbs": 210,
+        "fat": 58,
+        "isLogged": true
+      },
+      {
+        "date": "2026-10-11",
+        "consumedCalories": 1420,
+        "targetCalories": 2000,
+        "protein": 85,
+        "carbs": 160,
+        "fat": 42,
+        "isLogged": true
+      }
+    ],
+    "averageCalories": 1820,
+    "activeDays": 6,
+    "streakDays": 5
+  }
+}
+```
 
 ### 6.3 Weight Logs (List & Create)
-* **Method:** `GET`, `POST`
+* **Method:** `GET`
 * **Route:** `/api/v1/weight-logs`
+* **Auth Required:** Yes
+* **Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "logs": [
+      {
+        "_id": "6708f53a8123abc456789123",
+        "userId": "6708f53a8123abc456789012",
+        "weightKg": 74.5,
+        "date": "2026-10-11",
+        "notes": "Morning weigh-in before breakfast",
+        "createdAt": "2026-10-11T08:30:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+* **Method:** `POST`
+* **Route:** `/api/v1/weight-logs`
+* **Auth Required:** Yes
+* **Request Body:**
+```json
+{
+  "weightKg": 74.2,
+  "date": "2026-10-11",
+  "notes": "Fasted"
+}
+```
+* **Response (201 Created):** Returns created weight entry.
+
+### 6.4 Delete Weight Log
+* **Method:** `DELETE`
+* **Route:** `/api/v1/weight-logs/:id`
+* **Auth Required:** Yes
+* **Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Weight log deleted successfully"
+}
+```
+
+---
+
+## 7. Operational & System Endpoints
+
+### 7.1 Service Health Check
+* **Method:** `GET`
+* **Route:** `/api/v1/health`
+* **Auth Required:** No
+* **Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "NutriTrack API is fully operational.",
+  "status": "healthy",
+  "timestamp": "2026-10-11T15:20:00.000Z",
+  "version": "1.0.0"
+}
+```
+
+### 7.2 Interactive Swagger OpenAPI Documentation
+* **Method:** `GET`
+* **Route:** `/api/docs`
+* **Auth Required:** No (Development & Staging)
+* **Description:** Interactive Swagger UI rendering the OpenAPI 3.0 specification for endpoint inspection and live testing.
+
+---
+
+## 8. Server Configuration & Environment Variables
+
+| Variable | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `PORT` | Number | `5000` | Port for the Express REST server. |
+| `NODE_ENV` | String | `development` | Environment mode (`development`, `production`, `test`). |
+| `MONGODB_URI` | String | `mongodb://localhost:27017/nutritrack` | Connection URI for MongoDB replica or standalone. Auto-falls back to in-memory MongoDB in dev/testing if offline. |
+| `JWT_SECRET` | String | (required in prod) | Cryptographic signing secret for JSON Web Tokens. |
+| `JWT_EXPIRES_IN` | String | `7d` | Lifetime of issued authentication tokens. |
+| `CLIENT_ORIGIN` | String | `http://localhost:5173` | Allowed CORS origin for credentials-based requests. |
+| `COOKIE_SECURE` | Boolean | `false` | When `true`, enforces HTTPS `Secure` cookie flag in production. |
+

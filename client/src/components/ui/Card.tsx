@@ -1,14 +1,32 @@
 import React from "react";
 
-export const Card: React.FC<{
+interface CardProps {
   children: React.ReactNode;
   className?: string;
   onClick?: () => void;
-}> = ({ children, className = "", onClick }) => {
+  hover?: boolean;
+  glass?: boolean;
+}
+
+export const Card: React.FC<CardProps> = ({
+  children,
+  className = "",
+  onClick,
+  hover = false,
+  glass = false,
+}) => {
+  const base = glass
+    ? "bg-white/80 backdrop-blur-sm border border-white/60 rounded-2xl shadow-card p-5"
+    : "bg-white rounded-2xl border border-slate-100 shadow-card p-5";
+
+  const hoverClass = hover || onClick
+    ? "hover:shadow-card-hover hover:-translate-y-0.5 cursor-pointer transition-all duration-300"
+    : "transition-shadow duration-300";
+
   return (
     <div
       onClick={onClick}
-      className={`bg-white rounded-xl border border-gray-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-5 ${className}`}
+      className={`${base} ${hoverClass} ${className}`}
     >
       {children}
     </div>

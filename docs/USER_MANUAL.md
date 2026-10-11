@@ -45,13 +45,23 @@ Welcome to **NutriTrack**, your smart calorie and nutrition tracking companion. 
 
 ## 3. Daily Food Logging & Diary Management
 
-### 3.1 Logging a Meal
-1. From the **Dashboard** or **Food Diary**, click **+ Log Food** or click **+ Add Food** inside any meal section (*Breakfast*, *Lunch*, *Dinner*, *Snacks*).
-2. Type the food name (e.g., `"Boiled Egg"`, `"White Rice"`, `"Oats"`) or pick a category filter.
-3. Select the matching food item.
-4. Review the reference standard serving and enter your **Quantity** (e.g. 150 grams, 2 pieces).
-5. Watch the **Calculated Nutrition Preview** update in real-time.
-6. Click **Add to Meal**. The meal subtotal, daily consumed total, and remaining budget update immediately.
+### 3.1 Quick Meal & Activity Logging (Center Action Button)
+* **One-Tap Quick Log Popup**: Tap the prominent elevated circular **`+`** button in the center of the mobile navigation bar (or click **+ Log Food** in the desktop header).
+* A frosted **Quick Log Action Sheet** opens with instant shortcuts:
+  * 🍳 **Breakfast** (450–650 kcal) → Opens food search pre-configured for morning fuel.
+  * 🥗 **Lunch** (500–750 kcal) → Opens food search for midday meals.
+  * 🍲 **Dinner** (500–700 kcal) → Opens food search for evening protein.
+  * 🍎 **Snacks** (150–300 kcal) → Opens food search for light bites.
+  * 💧 **+250ml Water** → One-tap hydration logging with immediate visual confirmation.
+  * ⚖️ **Weight** → Instant morning weigh-in recorder.
+  * 🍽️ **Custom Food** → Quick shortcut to custom food creation.
+* **Direct Meal Logging**: Alternatively, click the circular **`+`** button next to any meal card on the Dashboard or Food Diary.
+* In the **Food Search Modal**:
+  1. Type the food name or pick a category filter.
+  2. Select the matching food item.
+  3. Review the standard serving size, pick a quick multiplier pill (`0.5x`, `1x`, `1.5x`, `2x`), or enter custom quantity.
+  4. View the live scaled calorie, protein, carb, fat, and fiber totals.
+  5. Click **Add to Meal**. Dashboard counters and circular donut gauges update in real-time.
 
 ### 3.2 Modifying or Deleting a Food Log Entry
 * **Edit Quantity**: Click the **pencil icon** next to the food entry, enter the new quantity, and click the green checkmark. NutriTrack automatically rescales calories and macros.
@@ -61,6 +71,29 @@ Welcome to **NutriTrack**, your smart calorie and nutrition tracking companion. 
 * Use the **<** and **>** buttons in the **Date Navigator** to step through previous or future dates.
 * Click **Jump to Today** to instantly return to today's date.
 * Click the calendar input to jump directly to any date.
+
+### 3.4 Daily Water Intake & Hydration Tracker
+* On the Dashboard, locate the **Daily Hydration** widget.
+* Use the one-click quick logging buttons:
+  * **+250 ml** (1 Glass 🥛)
+  * **+500 ml** (1 Bottle 💧)
+  * **+750 ml** (Flask 🧊)
+  * **-250 ml** (Undo)
+* As you log water, the animated gradient bar fills toward your 2,500 ml target. Reaching your daily target unlocks the **Goal Reached!** celebration badge.
+* Intake is automatically preserved per date.
+
+### 3.5 1-Click Nutrition Export & Coach Sharing
+* In either the **Dashboard** or **Food Diary**, click the **Export Day** / **Export** button.
+* NutriTrack generates an instant formatted report summarizing:
+  * Calories budget, consumed energy, and balance
+  * Macronutrient target vs consumed breakdowns (Protein, Carbs, Fat, Fiber)
+  * Detailed itemized meal logs by category (Breakfast, Lunch, Dinner, Snacks)
+* Click **Copy Report Text** to paste into WhatsApp, email, or Notion for your personal trainer/nutritionist.
+* Click **Download JSON** for structured machine-readable backups.
+
+### 3.6 Portion Multipliers & Live Macro Ratios
+* When logging food in the search modal, use the quick multiplier pills (`0.5x`, `1x`, `1.5x`, `2x`) to set common portion amounts instantly.
+* The modal calculates live calorie and macro totals, including the % distribution of calories originating from Protein, Carbs, and Fat.
 
 ---
 
@@ -87,7 +120,39 @@ If you consume a custom protein shake, packaged snack, or family recipe not pres
 
 ---
 
-## 6. Account Deletion & Data Privacy
+## 6. App Appearance & Color Theme Customization
+NutriTrack features a live dynamic Theme Engine that transforms the visual aesthetic across all components without page reload:
+1. Navigate to **Profile & Goals** (`/profile`).
+2. Under the **App Appearance & Color Theme** section, choose from 6 curated palettes:
+   * **Emerald Mint** (Default): Fresh crisp green for balanced wellness.
+   * **Royal Indigo**: Deep modern purple & violet accents (*inspired by Inspo Reference 1*).
+   * **Nutrio Lime**: High-energy athletic lime (*inspired by Inspo References 2 & 3*).
+   * **Ocean Cyan**: Cool tech cyan for calm focus and hydration.
+   * **Sunset Coral**: Energizing warm amber/coral for calorie burning.
+   * **Rose Berry**: Playful berry & magenta wellness aesthetic.
+3. Clicking any theme immediately recolors navigation links, hero circular donut rings, charts, badges, and action buttons. The selected theme persists in your browser's local storage.
+
+---
+
+## 7. Account Deletion & Data Privacy
 1. Navigate to **Profile & Goals**.
 2. Scroll to the bottom and click **Delete Account**.
 3. Confirm the action in the security dialog. All your profile information, historical food logs, weight entries, and custom foods will be permanently purged from the database.
+
+---
+
+## 8. Cross-Device Responsive Layouts
+NutriTrack delivers a tailored experience across all screen sizes:
+* **Mobile Smartphones (< 768px)**:
+  * Minimal **Instagram-style top sticky header** displaying the brand wordmark **NutriTrack** alongside dynamic greetings (*Good morning / Good afternoon / Good evening*).
+  * Completely **hidden vertical scrollbars** (`scrollbar-width: none`) delivering an edge-to-edge native mobile app feel.
+  * Hero **Daily Calorie Budget** circular donut gauge positioned first at the top of the feed for zero-scroll glanceability.
+  * Floating pill bottom navigation with frosted glass backdrop and elevated center **`+`** quick-log button.
+* **Tablets (768px – 1023px)**:
+  * Compact **72px icon-rail sidebar** preserving vertical workspace.
+  * Balanced **2-column grid** pairing hero calories with macro donut gauges and planned meals alongside analytics cards.
+* **Desktops & Laptops (≥ 1024px)**:
+  * Expanded **260px sidebar** with feature descriptions and daily calorie target indicator.
+  * Clean top header with brand title, greetings, theme selector, and quick log shortcuts.
+  * Comprehensive multi-column analytics view with rolling charts, streaks, and hydration progress.
+

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
+import { useTheme } from "../context/ThemeContext";
 import { api, getApiErrorMessage } from "../services/api";
 import { WeeklyNutritionSummary, MonthlyNutritionSummary, IWeightLog, ApiResponse } from "../types";
-import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { WeightTrackerModal } from "../components/WeightTrackerModal";
+import { DayStreakCard } from "../components/DayStreakCard";
 import { Skeleton } from "../components/ui/Skeleton";
 import {
   BarChart,
@@ -14,13 +15,37 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
-  LineChart,
-  Line,
   CartesianGrid,
+  Area,
+  AreaChart,
+  Cell,
 } from "recharts";
-import { TrendingUp, Scale, Calendar, AlertCircle, Plus } from "lucide-react";
+import {
+  Scale,
+  AlertCircle,
+  Plus,
+  Flame,
+} from "lucide-react";
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-900 text-white rounded-2xl shadow-xl px-3.5 py-2.5 text-xs border border-slate-800">
+        <p className="font-bold text-slate-300 mb-1">{label}</p>
+        {payload.map((p: any, i: number) => (
+          <p key={i} className="font-black text-emerald-400">
+            {p.name}: {p.value} {p.name === "Weight" ? "kg" : "kcal"}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
 
 export const ProgressPage: React.FC = () => {
+  const { currentTheme } = useTheme();
+  const [timeRange, setTimeRange] = useState<"Day" | "Week" | "Month" | "Year">("Week");
   const [weeklyData, setWeeklyData] = useState<WeeklyNutritionSummary | null>(null);
   const [monthlyData, setMonthlyData] = useState<MonthlyNutritionSummary | null>(null);
   const [weightLogs, setWeightLogs] = useState<IWeightLog[]>([]);
@@ -58,10 +83,10 @@ export const ProgressPage: React.FC = () => {
   // Format 7-day chart data
   const chartWeekData =
     weeklyData?.days.map((d) => ({
-      name: format(new Date(d.date), "EEE (d)"),
+      name: format(new Date(d.date), "EEE"),
       Calories: d.hasLogs ? d.calories : 0,
       Target: d.targetCalories,
-      Status: d.hasLogs ? "Logged" : "No Log",
+      hasLogs: d.hasLogs,
     })) || [];
 
   // Format weight trend data
@@ -70,27 +95,49 @@ export const ProgressPage: React.FC = () => {
     Weight: w.weightKg,
   }));
 
+  const loggedDays = weeklyData?.loggedDaysCount ?? 0;
+  const currentWeight = weightLogs.length > 0 ? weightLogs[weightLogs.length - 1].weightKg : null;
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-6 animate-fade-in pb-16 lg:pb-8">
+      {/* Top Header + Segmented Range Switcher */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">
-            Nutrition Progress & History
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            Analytics
           </h2>
-          <p className="text-xs md:text-sm text-gray-500 mt-0.5">
-            Evaluate your weekly intake consistency and track body weight trends over time.
+          <p className="text-xs sm:text-sm text-slate-400 font-medium mt-0.5">
+            Detailed caloric patterns, weekly trends, and body recomposition
           </p>
         </div>
 
-        <Button variant="primary" size="md" onClick={() => setIsWeightModalOpen(true)}>
-          <Plus className="w-4 h-4 mr-1.5" />
-          Log Weight
-        </Button>
+        <div className="flex items-center gap-3">
+          {/* Segmented Time Range Switcher (Day / Week / Month / Year) */}
+          <div className="flex items-center p-1 bg-slate-100 rounded-2xl">
+            {(["Day", "Week", "Month", "Year"] as const).map((range) => (
+              <button
+                key={range}
+                onClick={() => setTimeRange(range)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  timeRange === range
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
+              >
+                {range}
+              </button>
+            ))}
+          </div>
+
+          <Button variant="primary" size="sm" onClick={() => setIsWeightModalOpen(true)}>
+            <Plus className="w-4 h-4 mr-1" />
+            Log Weight
+          </Button>
+        </div>
       </div>
 
       {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-xl flex items-center space-x-2">
+        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-2xl flex items-center gap-2 animate-slide-up">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
@@ -98,125 +145,152 @@ export const ProgressPage: React.FC = () => {
 
       {isLoading ? (
         <div className="space-y-6">
-          <Skeleton className="h-72 w-full rounded-xl" />
-          <Skeleton className="h-72 w-full rounded-xl" />
+          <Skeleton className="h-64 w-full rounded-3xl" />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-28 rounded-3xl" />
+            ))}
+          </div>
+          <Skeleton className="h-64 w-full rounded-3xl" />
         </div>
       ) : (
         <>
-          {/* Weekly Calorie Intake Chart */}
-          <Card className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div className="flex items-center space-x-2">
-                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                  <TrendingUp className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900">Last 7 Days Caloric Intake</h3>
-                  <p className="text-xs text-gray-500">Daily intake compared to your target</p>
-                </div>
+          {/* Hero Caloric Intake Bar Chart Card */}
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.03)] p-5 sm:p-6 transition-all">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+              <div>
+                <span className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight block">
+                  {weeklyData?.averageCalories || 0}{" "}
+                  <span className="text-base sm:text-lg font-bold text-slate-400">kcal avg</span>
+                </span>
+                <span className="text-xs text-slate-400 font-medium">
+                  Past 7 days · Daily target: {weeklyData?.targetCalories || 0} kcal
+                </span>
               </div>
 
-              {weeklyData && (
-                <div className="flex items-center space-x-4 text-xs font-semibold text-gray-600">
-                  <span className="bg-gray-100 px-2.5 py-1 rounded-md">
-                    Avg: <span className="text-emerald-600 font-bold">{weeklyData.averageCalories}</span> kcal/day
-                  </span>
-                  <span className="bg-gray-100 px-2.5 py-1 rounded-md">
-                    Logged: <span className="text-gray-900 font-bold">{weeklyData.loggedDaysCount} / 7</span> days
-                  </span>
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1 text-xs font-black text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
+                  <Flame className="w-3.5 h-3.5 text-emerald-600" />
+                  {loggedDays}/7 Days Logged
+                </span>
+              </div>
             </div>
 
-            <div className="h-64 w-full pt-4">
+            {/* Recharts Bar Chart with Pill Rounded Bars */}
+            <div className="h-60 sm:h-64 w-full pt-3">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartWeekData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#6B7280" }} />
-                  <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "#FFFFFF",
-                      borderRadius: "0.75rem",
-                      border: "1px solid #E5E7EB",
-                      boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)",
-                      fontSize: "12px",
-                    }}
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F8FAFC" />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 11, fill: "#94A3B8", fontWeight: 700 }}
+                    axisLine={false}
+                    tickLine={false}
                   />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "#94A3B8" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0,0,0,0.02)" }} />
                   {weeklyData && (
                     <ReferenceLine
                       y={weeklyData.targetCalories}
                       stroke="#EF4444"
                       strokeDasharray="4 4"
+                      strokeWidth={1.5}
                       label={{
-                        value: `Target (${weeklyData.targetCalories})`,
+                        value: `Target: ${weeklyData.targetCalories}`,
                         position: "insideTopRight",
                         fill: "#EF4444",
                         fontSize: 10,
+                        fontWeight: 700,
                       }}
                     />
                   )}
-                  <Bar dataKey="Calories" fill="#059669" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Calories" radius={[12, 12, 12, 12]} maxBarSize={44}>
+                    {chartWeekData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.hasLogs ? currentTheme.primaryHex : "#F1F5F9"}
+                      />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <p className="text-[11px] text-gray-400 text-center">
-              * Note: Days with zero recorded entries reflect unlogged periods, not zero-calorie fasting.
+
+            <p className="text-[11px] text-slate-400 text-center mt-2">
+              * Bars represent daily logged caloric intake against your Mifflin-St Jeor target line.
             </p>
-          </Card>
+          </div>
 
-          {/* 30-Day Monthly Summary Statistics */}
-          {monthlyData && (
-            <Card>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                  <Calendar className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900">30-Day Nutrition Highlights</h3>
-                  <p className="text-xs text-gray-500">Summary metrics across the past month</p>
-                </div>
-              </div>
+          {/* 4 Quick Stat Metric Cards (Inspired by Image 1 & 3) */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.03)] p-4 sm:p-5">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                Active Days
+              </span>
+              <p className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 leading-none">
+                {monthlyData?.loggedDaysCount || loggedDays}
+              </p>
+              <span className="text-[10px] sm:text-xs text-slate-400 font-medium mt-1 block">
+                this month
+              </span>
+            </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                  <span className="text-[11px] text-gray-500 uppercase font-medium">Logged Days</span>
-                  <p className="text-lg font-bold text-gray-900 mt-1">
-                    {monthlyData.loggedDaysCount} <span className="text-xs text-gray-400">/ 30</span>
-                  </p>
-                </div>
-                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                  <span className="text-[11px] text-gray-500 uppercase font-medium">Average Intake</span>
-                  <p className="text-lg font-bold text-emerald-600 mt-1">
-                    {monthlyData.averageCalories} <span className="text-xs text-gray-400">kcal</span>
-                  </p>
-                </div>
-                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                  <span className="text-[11px] text-gray-500 uppercase font-medium">Highest Intake</span>
-                  <p className="text-lg font-bold text-amber-600 mt-1">
-                    {monthlyData.highestCalories} <span className="text-xs text-gray-400">kcal</span>
-                  </p>
-                </div>
-                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                  <span className="text-[11px] text-gray-500 uppercase font-medium">Lowest Intake</span>
-                  <p className="text-lg font-bold text-blue-600 mt-1">
-                    {monthlyData.lowestCalories} <span className="text-xs text-gray-400">kcal</span>
-                  </p>
-                </div>
-              </div>
-            </Card>
-          )}
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.03)] p-4 sm:p-5">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                Peak Intake
+              </span>
+              <p className="text-2xl sm:text-3xl font-black text-amber-600 mt-1 leading-none">
+                {monthlyData?.highestCalories || 0}
+              </p>
+              <span className="text-[10px] sm:text-xs text-slate-400 font-medium mt-1 block">
+                kcal max
+              </span>
+            </div>
 
-          {/* Body Weight Trend Chart */}
-          <Card className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div className="flex items-center space-x-2">
-                <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.03)] p-4 sm:p-5">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                Current Weight
+              </span>
+              <p className="text-2xl sm:text-3xl font-black text-indigo-600 mt-1 leading-none">
+                {currentWeight ? `${currentWeight} kg` : "—"}
+              </p>
+              <span className="text-[10px] sm:text-xs text-slate-400 font-medium mt-1 block">
+                body weight
+              </span>
+            </div>
+
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.03)] p-4 sm:p-5">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                Lowest Day
+              </span>
+              <p className="text-2xl sm:text-3xl font-black text-blue-600 mt-1 leading-none">
+                {monthlyData?.lowestCalories || 0}
+              </p>
+              <span className="text-[10px] sm:text-xs text-slate-400 font-medium mt-1 block">
+                kcal min
+              </span>
+            </div>
+          </div>
+
+          {/* 7-Day Challenge Streak */}
+          <DayStreakCard selectedDate={todayStr} />
+
+          {/* Body Weight History Trend Card */}
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.03)] p-5 sm:p-6 transition-all space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
                   <Scale className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900">Body Weight History</h3>
-                  <p className="text-xs text-gray-500">Logged weigh-ins and progress curve</p>
+                  <h3 className="text-base font-black text-slate-900 tracking-tight">
+                    Body Weight Trend
+                  </h3>
+                  <p className="text-xs text-slate-400 font-medium">Historical weigh-ins and trajectory</p>
                 </div>
               </div>
 
@@ -227,57 +301,64 @@ export const ProgressPage: React.FC = () => {
             </div>
 
             {chartWeightData.length === 0 ? (
-              <div className="text-center py-10 bg-gray-50/50 border border-dashed border-gray-200 rounded-xl">
-                <Scale className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                <p className="text-xs text-gray-500">No weight records logged yet.</p>
+              <div className="text-center py-12 bg-slate-50/60 rounded-3xl border border-dashed border-slate-200">
+                <Scale className="w-10 h-10 text-slate-300 mx-auto mb-2.5" />
+                <p className="text-sm font-bold text-slate-700">No weight records yet</p>
+                <p className="text-xs text-slate-400 mt-1">
+                  Start tracking morning weigh-ins to plot your body weight curve here.
+                </p>
                 <Button
-                  variant="outline"
+                  variant="primary"
                   size="sm"
-                  className="mt-3"
+                  className="mt-4"
                   onClick={() => setIsWeightModalOpen(true)}
                 >
-                  Record Initial Weight
+                  Record First Weigh-in
                 </Button>
               </div>
             ) : (
               <div className="h-60 w-full pt-2">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartWeightData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />
-                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#6B7280" }} />
+                  <AreaChart data={chartWeightData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="weightGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F8FAFC" />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 11, fill: "#94A3B8", fontWeight: 700 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
                     <YAxis
-                      domain={["dataMin - 2", "dataMax + 2"]}
-                      tick={{ fontSize: 11, fill: "#6B7280" }}
+                      domain={["dataMin - 1", "dataMax + 1"]}
+                      tick={{ fontSize: 11, fill: "#94A3B8" }}
                       unit="kg"
+                      axisLine={false}
+                      tickLine={false}
                     />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#FFFFFF",
-                        borderRadius: "0.75rem",
-                        border: "1px solid #E5E7EB",
-                        fontSize: "12px",
-                      }}
-                    />
-                    <Line
+                    <Tooltip content={<CustomTooltip />} />
+                    <Area
                       type="monotone"
                       dataKey="Weight"
-                      stroke="#D97706"
-                      strokeWidth={2.5}
-                      dot={{ r: 4, fill: "#D97706" }}
-                      activeDot={{ r: 6 }}
+                      stroke="#F59E0B"
+                      strokeWidth={3}
+                      fill="url(#weightGrad)"
+                      dot={{ r: 4, fill: "#F59E0B", stroke: "white", strokeWidth: 2 }}
+                      activeDot={{ r: 6, stroke: "white", strokeWidth: 2 }}
                     />
-                  </LineChart>
+                  </AreaChart>
                 </ResponsiveContainer>
               </div>
             )}
-            <p className="text-[11px] text-gray-400 text-center">
-              * Daily weight fluctuations reflect hydration, glycogen, and sodium balance rather than immediate adipose tissue changes.
-            </p>
-          </Card>
+          </div>
         </>
       )}
 
-      {/* Weight Tracker Modal */}
+      {/* Modal */}
       <WeightTrackerModal
         isOpen={isWeightModalOpen}
         onClose={() => setIsWeightModalOpen(false)}
