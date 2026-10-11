@@ -30,7 +30,7 @@ export const AppSidebar: React.FC = () => {
     : "U";
 
   return (
-    <aside className="hidden md:flex flex-col md:w-20 lg:w-64 xl:w-72 bg-white border-r border-slate-100 min-h-screen py-5 px-3 lg:px-4 shrink-0 select-none sticky top-0 h-screen overflow-y-auto no-scrollbar transition-all duration-300">
+    <aside className="hidden md:flex flex-col md:fixed md:top-0 md:left-0 md:bottom-0 md:w-20 lg:w-64 xl:w-72 bg-white border-r border-slate-100 h-screen py-5 px-3 lg:px-4 shrink-0 select-none z-30 overflow-y-auto no-scrollbar transition-all duration-300">
       {/* Brand Header */}
       <div className="flex items-center gap-3 px-2 py-3 mb-6 md:justify-center lg:justify-start">
         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/25 shrink-0">
