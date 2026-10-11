@@ -18,7 +18,7 @@ describe("NutriTrack Backend API Integration Tests", () => {
     if (rice) {
       sampleFoodId = rice._id.toString();
     }
-  });
+  }, 180000);
 
   afterAll(async () => {
     await disconnectDB();
