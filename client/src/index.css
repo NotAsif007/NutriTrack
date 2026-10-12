@@ -112,7 +112,11 @@
   }
 
   body {
-    @apply bg-[#F8FAFC] text-slate-900 font-sans antialiased;
+    background-color: #F8FAFC;
+    color: #0F172A;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
     overscroll-behavior-y: none;
     scrollbar-width: none !important;
@@ -123,30 +127,58 @@
 @layer components {
   /* Ultra-clean modern cards */
   .card-modern {
-    @apply bg-white rounded-3xl border border-slate-100 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.03)] p-5 transition-all duration-200;
+    background-color: #ffffff;
+    border-radius: 1.5rem;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
+    padding: 1.25rem;
+    transition: all 200ms ease;
   }
 
   .card-modern-hover {
-    @apply card-modern hover:shadow-[0_10px_30px_-4px_rgba(0,0,0,0.06)] hover:border-slate-200/80;
+    background-color: #ffffff;
+    border-radius: 1.5rem;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.03);
+    padding: 1.25rem;
+    transition: all 200ms ease;
+  }
+  .card-modern-hover:hover {
+    box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.06);
+    border-color: rgba(226, 232, 240, 0.8);
   }
 
   /* Glassmorphism card */
   .glass {
-    @apply bg-white/80 backdrop-blur-md border border-white/70 shadow-sm;
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   }
 
   .glass-dark {
-    @apply bg-slate-900/80 backdrop-blur-md border border-white/10;
+    background-color: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   /* Pill Buttons & Badges */
   .pill-badge {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold transition-all;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    transition: all 150ms ease;
   }
 
   /* Gradient text */
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-400;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(to right, rgb(5, 150, 105), rgb(16, 185, 129), rgb(52, 211, 153));
   }
 }
 
@@ -160,10 +192,11 @@
     background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply bg-slate-200/70 rounded-full;
+    background-color: rgba(226, 232, 240, 0.7);
+    border-radius: 9999px;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    @apply bg-slate-300;
+    background-color: #cbd5e1;
   }
 
   /* Hide scrollbar but keep functionality */
