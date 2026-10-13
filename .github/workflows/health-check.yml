@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Check Render API health
         env:
-          API_URL: ${{ vars.NUTRITRACK_API_URL }}
+          API_URL: https://nutritrack-api-4bci.onrender.com
         run: |
           test -n "$API_URL"
           curl --fail --show-error --silent "$API_URL/api/v1/health"
