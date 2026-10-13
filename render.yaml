@@ -25,11 +25,12 @@ services:
       - key: COOKIE_SECURE
         value: true
 
-  - type: static
+  - type: web
     name: nutritrack-web
+    runtime: static
     plan: free
     buildCommand: npm ci && npm run build --workspace=client
-    publishPath: client/dist
+    staticPublishPath: client/dist
     envVars:
       - key: VITE_API_HOST
         fromService:
