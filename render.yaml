@@ -28,7 +28,6 @@ services:
   - type: web
     name: nutritrack-web
     runtime: static
-    plan: free
     buildCommand: npm ci && npm run build --workspace=client
     staticPublishPath: client/dist
     envVars:
