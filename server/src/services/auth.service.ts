@@ -13,7 +13,7 @@ export function getCookieOptions(): CookieOptions {
   return {
     httpOnly: true,
     secure: env.NODE_ENV === "production" ? true : env.COOKIE_SECURE,
-    sameSite: env.NODE_ENV === "production" ? "strict" : "lax",
+    sameSite: env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
     path: "/",
   };

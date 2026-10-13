@@ -31,7 +31,7 @@ app.use(
       ) {
         return callback(null, true);
       }
-      return callback(null, true); // Fallback for local testing
+      return callback(new Error("Origin is not allowed by CORS"));
     },
     credentials: true,
   })
