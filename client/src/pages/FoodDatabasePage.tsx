@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { api, getApiErrorMessage } from "../services/api";
+import { cachedGet } from "../services/cache";
 import { IFood, ApiResponse } from "../types";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
@@ -43,9 +44,10 @@ export const FoodDatabasePage: React.FC = () => {
       if (searchQuery.trim()) params.q = searchQuery.trim();
       if (selectedCategory !== "All") params.category = selectedCategory;
 
-      const res = await api.get<ApiResponse<{ foods: IFood[] }>>("/foods", { params });
-      if (res.data.success) {
-        setFoods(res.data.data.foods);
+      const query = new URLSearchParams(params).toString();
+      const data = await cachedGet(`foods:${query}`, () => api.get<ApiResponse<{ foods: IFood[] }>>("/foods", { params }).then((res) => res.data));
+      if (data.success) {
+        setFoods(data.data.foods);
       }
     } catch (err) {
       setError(getApiErrorMessage(err));

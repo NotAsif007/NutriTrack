@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
 import { api, getApiErrorMessage } from "../services/api";
+import { cachedGet } from "../services/cache";
 import { DayDiarySummary, DailyNutritionSummary, MealType, ApiResponse } from "../types";
 import { DateNavigator } from "../components/DateNavigator";
 import { MealSection } from "../components/MealSection";
@@ -28,15 +29,15 @@ export const FoodDiaryPage: React.FC = () => {
     setError(null);
     try {
       const [diaryRes, summaryRes] = await Promise.all([
-        api.get<ApiResponse<DayDiarySummary>>(`/food-logs?date=${selectedDate}`),
-        api.get<ApiResponse<DailyNutritionSummary>>(`/nutrition/daily?date=${selectedDate}`),
+        cachedGet(`diary:logs:${selectedDate}`, () => api.get<ApiResponse<DayDiarySummary>>(`/food-logs?date=${selectedDate}`).then((res) => res.data)),
+        cachedGet(`diary:daily:${selectedDate}`, () => api.get<ApiResponse<DailyNutritionSummary>>(`/nutrition/daily?date=${selectedDate}`).then((res) => res.data)),
       ]);
 
-      if (diaryRes.data.success) {
-        setDiary(diaryRes.data.data);
+      if (diaryRes.success) {
+        setDiary(diaryRes.data);
       }
-      if (summaryRes.data.success) {
-        setSummary(summaryRes.data.data);
+      if (summaryRes.success) {
+        setSummary(summaryRes.data);
       }
     } catch (err) {
       setError(getApiErrorMessage(err));

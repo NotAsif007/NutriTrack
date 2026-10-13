@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
 import { useTheme } from "../context/ThemeContext";
 import { api, getApiErrorMessage } from "../services/api";
+import { cachedGet } from "../services/cache";
 import { WeeklyNutritionSummary, MonthlyNutritionSummary, IWeightLog, ApiResponse } from "../types";
 import { Button } from "../components/ui/Button";
 import { WeightTrackerModal } from "../components/WeightTrackerModal";
@@ -61,14 +62,14 @@ export const ProgressPage: React.FC = () => {
     setError(null);
     try {
       const [weekRes, monthRes, weightRes] = await Promise.all([
-        api.get<ApiResponse<WeeklyNutritionSummary>>(`/nutrition/weekly?endDate=${todayStr}`),
-        api.get<ApiResponse<MonthlyNutritionSummary>>(`/nutrition/monthly?endDate=${todayStr}`),
-        api.get<ApiResponse<{ logs: IWeightLog[] }>>("/weight-logs"),
+        cachedGet(`progress:weekly:${todayStr}`, () => api.get<ApiResponse<WeeklyNutritionSummary>>(`/nutrition/weekly?endDate=${todayStr}`).then((res) => res.data)),
+        cachedGet(`progress:monthly:${todayStr}`, () => api.get<ApiResponse<MonthlyNutritionSummary>>(`/nutrition/monthly?endDate=${todayStr}`).then((res) => res.data)),
+        cachedGet("progress:weights", () => api.get<ApiResponse<{ logs: IWeightLog[] }>>("/weight-logs").then((res) => res.data)),
       ]);
 
-      if (weekRes.data.success) setWeeklyData(weekRes.data.data);
-      if (monthRes.data.success) setMonthlyData(monthRes.data.data);
-      if (weightRes.data.success) setWeightLogs(weightRes.data.data.logs);
+      if (weekRes.success) setWeeklyData(weekRes.data);
+      if (monthRes.success) setMonthlyData(monthRes.data);
+      if (weightRes.success) setWeightLogs(weightRes.data.logs);
     } catch (err) {
       setError(getApiErrorMessage(err));
     } finally {

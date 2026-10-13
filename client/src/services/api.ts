@@ -17,6 +17,9 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
+  if (config.method && config.method.toLowerCase() !== "get" && typeof window !== "undefined") {
+    window.dispatchEvent(new Event("nutritrack:cache-invalidate"));
+  }
   if (typeof window !== "undefined") {
     const demoToken = window.localStorage.getItem(DEMO_TOKEN_KEY);
     if (demoToken) {
