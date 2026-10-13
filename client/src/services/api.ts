@@ -14,6 +14,18 @@ export const api = axios.create({
   },
 });
 
+// Keep the UI in sync when a browser drops the cross-site session cookie.
+// AuthContext listens for this event and ProtectedRoute redirects to login.
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && typeof window !== "undefined") {
+      window.dispatchEvent(new Event("nutritrack:unauthorized"));
+    }
+    return Promise.reject(error);
+  }
+);
+
 export function getApiErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     if (error.response?.data?.error?.message) {

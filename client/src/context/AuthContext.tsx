@@ -36,6 +36,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     refreshUser();
   }, [refreshUser]);
 
+  useEffect(() => {
+    const handleUnauthorized = () => setUser(null);
+    window.addEventListener("nutritrack:unauthorized", handleUnauthorized);
+    return () => window.removeEventListener("nutritrack:unauthorized", handleUnauthorized);
+  }, []);
+
   const login = async (email: string, password: string) => {
     try {
       const res = await api.post<ApiResponse<{ user: IUser }>>("/auth/login", { email, password });

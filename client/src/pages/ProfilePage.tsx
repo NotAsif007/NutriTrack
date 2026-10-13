@@ -6,7 +6,7 @@ import { Card } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
-import { User, Trash2, Check, AlertCircle, Info, Flame, Activity, Target, ChevronRight, Palette } from "lucide-react";
+import { User, Trash2, Check, AlertCircle, Info, Flame, Activity, Target, ChevronRight, Palette, LogOut } from "lucide-react";
 import { Gender, ActivityLevel, NutritionGoal } from "../types";
 
 const sectionHeader = (icon: React.ReactNode, title: string, subtitle: string, iconBg: string) => (
@@ -445,6 +445,20 @@ export const ProfilePage: React.FC = () => {
           </Button>
         </div>
       </form>
+
+      {/* Session controls */}
+      <Card>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-bold text-slate-900">Account session</h3>
+            <p className="text-xs text-slate-500 mt-1">Sign out on this device and return to the login screen.</p>
+          </div>
+          <Button variant="secondary" type="button" onClick={() => logout()}>
+            <LogOut className="w-4 h-4" />
+            Log out
+          </Button>
+        </div>
+      </Card>
 
       {/* Account Deletion Confirmation Dialog */}
       <ConfirmDialog
