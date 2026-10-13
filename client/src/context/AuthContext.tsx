@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { api, getApiErrorMessage } from "../services/api";
+import { api, DEMO_TOKEN_KEY, getApiErrorMessage } from "../services/api";
 import { IUser, ApiResponse } from "../types";
 
 interface AuthContextType {
@@ -37,15 +37,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [refreshUser]);
 
   useEffect(() => {
-    const handleUnauthorized = () => setUser(null);
+    const handleUnauthorized = () => {
+      window.localStorage.removeItem(DEMO_TOKEN_KEY);
+      setUser(null);
+    };
     window.addEventListener("nutritrack:unauthorized", handleUnauthorized);
     return () => window.removeEventListener("nutritrack:unauthorized", handleUnauthorized);
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
-      const res = await api.post<ApiResponse<{ user: IUser }>>("/auth/login", { email, password });
+      const res = await api.post<ApiResponse<{ user: IUser; token?: string }>>("/auth/login", { email, password });
       if (res.data.success) {
+        if (email.trim().toLowerCase() === "demo@test.com" && res.data.data.token) {
+          window.localStorage.setItem(DEMO_TOKEN_KEY, res.data.data.token);
+        } else {
+          window.localStorage.removeItem(DEMO_TOKEN_KEY);
+        }
         setUser(res.data.data.user);
       }
     } catch (err) {
@@ -68,6 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await api.post("/auth/logout");
     } finally {
+      window.localStorage.removeItem(DEMO_TOKEN_KEY);
       setUser(null);
     }
   };

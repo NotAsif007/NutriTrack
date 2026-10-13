@@ -6,12 +6,24 @@ const API_BASE_URL =
     ? `https://${import.meta.env.VITE_API_HOST}/api/v1`
     : "/api/v1");
 
+export const DEMO_TOKEN_KEY = "nutritrack_demo_token";
+
 export const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
+});
+
+api.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const demoToken = window.localStorage.getItem(DEMO_TOKEN_KEY);
+    if (demoToken) {
+      config.headers.Authorization = `Bearer ${demoToken}`;
+    }
+  }
+  return config;
 });
 
 // Keep the UI in sync when a browser drops the cross-site session cookie.
