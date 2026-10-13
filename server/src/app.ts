@@ -17,6 +17,12 @@ app.use(
 );
 
 // Cross-Origin Resource Sharing
+const configuredClientOrigin = env.CLIENT_ORIGIN.replace(/\/$/, "");
+const allowedClientOrigins = new Set([
+  configuredClientOrigin,
+  configuredClientOrigin.startsWith("http") ? configuredClientOrigin : `https://${configuredClientOrigin}`,
+]);
+
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -24,7 +30,7 @@ app.use(
       if (!origin) return callback(null, true);
       // In development, allow localhost on common vite/react ports
       if (
-        origin === env.CLIENT_ORIGIN ||
+        allowedClientOrigins.has(origin) ||
         origin === "http://localhost:5173" ||
         origin === "http://localhost:3000" ||
         origin === "http://127.0.0.1:5173"
