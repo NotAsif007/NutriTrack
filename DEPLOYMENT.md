@@ -6,7 +6,7 @@ NutriTrack is configured for a Render Blueprint deployment through [`render.yaml
 
 - **`nutritrack-api`** — Node/Express API with `/api/v1/health` as the health check.
 - **`nutritrack-web`** — Vite/React static site with SPA fallback routing. Render injects the API hostname into `VITE_API_HOST` during the build.
-- **`nutritrack-health-check`** — hourly Render cron job (`0 * * * *`) that calls the API health endpoint and exits non-zero if the API is unhealthy.
+- **GitHub Actions health check** — the free `.github/workflows/health-check.yml` workflow runs hourly (`0 * * * *`) and calls the API health endpoint.
 
 ## Deploy
 
@@ -16,7 +16,7 @@ NutriTrack is configured for a Render Blueprint deployment through [`render.yaml
 4. Render generates `JWT_SECRET`; do not replace it with a value committed to Git.
 5. Verify the web service and API service URLs, then open the web service URL.
 
-The cron job requires the API service to be available. It runs once every hour and is intentionally read-only: it only requests `/api/v1/health`.
+The health-check workflow requires a repository variable named `NUTRITRACK_API_URL`, set to the deployed API origin such as `https://nutritrack-api.onrender.com`. It runs once every hour and is intentionally read-only: it only requests `/api/v1/health`.
 
 ## Production notes
 

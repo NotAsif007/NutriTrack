@@ -1,0 +1,17 @@
+name: NutriTrack API health check
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Render API health
+        env:
+          API_URL: ${{ vars.NUTRITRACK_API_URL }}
+        run: |
+          test -n "$API_URL"
+          curl --fail --show-error --silent "$API_URL/api/v1/health"
